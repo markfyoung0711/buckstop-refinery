@@ -1,4 +1,8 @@
-class Stage():
+from dataclasses import dataclass
+from datetime import datetime
+
+@dataclass
+class Stage:
     '''
     Used to stage data to a staging location from a parsed Vendor object.
 
@@ -15,8 +19,11 @@ class Stage():
     in the system.  So, if there is a typed object like Job or WorkOrder or Symbol Identifier
     there would be categories of "job_id", "work_order_id", and "symbol_id"
 
-    A Job warehouse file would then be like: path/region/job_id/date/job_id.subtype.csv
-    e.g. /myroot/us-east/rockefeller/eu/job_id/2024/01/04/job_id.minerals.csv
+    A Job warehouse file would then be like: path/region/<category_name>/<vendor>/<date>/<category_name>.<category_subtype>.csv
+    e.g. /myroot/us-east/rockefeller/eu/sid/bloomberg/2024/01/04/sid.equity.csv
+    e.g. /myroot/us-east/rockefeller/eu/sid/bloomberg/2024/01/04/sid.future.csv
+    e.g. /myroot/us-east/rockefeller/eu/trading_line/bloomberg/2024/01/04/trading_line.equity.csv
+    e.g. /myroot/us-east/rockefeller/eu/trading_line/bloomberg/2024/01/04/trading_line.future.csv
 
     This would be a region "eu" warehouse file for mineral jobs created for 2024/01/04.
 
@@ -26,4 +33,12 @@ class Stage():
     name. May change depending on requirements
     We can make this flexible later if need be.
     '''
+
+    path: str
+    region: str
+    category_name: str
+    category_type: str
+    vendor: str
+    date: datetime
+    
     pass
