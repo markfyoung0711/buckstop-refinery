@@ -45,7 +45,7 @@ next step, Check.
 "House" is done immediately after a Check succeeds.  It very simply moves the final result of the Stage to the new warehouse master. If any tests during Check had failed, the House step is not run automatically.  The details for Check results will indicate whether it is advisable and under what conditions it might be that it is appropriate for the House step to be run.  The House step can be force-run if it is found that the Check result is acceptable, as in the case of a warning.  The running of individual steps in the pipeline is handled by a [Pipeline Flow Plug-In](#pipeline-scheduling-system)
 
 ### Export
-The master object (a single warehouse representation) is exported into a database or some other representation, e.g.  CSV, Parquet, feather, HDF5, Snowflake.  A master is specified for each object in the data warehouse, as defined by the data being modelled.  Typically, a data warehouse will be a logical umbrella that includes several related warehouse masters, each of which is managed by an individual pipeline.
+"Export" stores the master object (a single warehouse representation) into a physical representation available for the enterprise, e.g.  CSV, Parquet, feather, HDF5, Snowflake.  A master is specified for each object in the data warehouse, as defined by the data being modelled.  Typically, a data warehouse will be a logical umbrella that includes several related warehouse masters, each of which is managed by an individual pipeline.
 
 ## Override System
 Override is actually a system including a small database and a GUI that allows a support person to override individual data elements of the Source data.
