@@ -5,9 +5,9 @@ Welcome to the Bonum MDM and DWH system documentation.
 1. [Purpose](#purpose)
 2. [Logical System Diagram](#logical-system-diagram)
 3. [Pipeline Steps](#pipeline-steps)
-4. [Override System] (#override-system)
+4. [Override System](#override-system)
 5. [Pipeline Scheduling System](#pipeline-scheduling-system)
-6. [Monitoring System](#monitoring-system)
+5. [Monitoring System](#monitoring-system)
 7. [Setting up Batch Pipelines for Warehouses](#setting-up-batch-pipelines-for-warehouses)
 8. [Setting up OLTP Pipelines for Warehouses](#setting-up-oltp-pipelines-for-warehouses)
 9. [Supporting Concepts](#supporting-concepts)
@@ -122,6 +122,7 @@ These are the typical steps involved in creating a data warehouse from Source da
 * Identify origin of Source data, e.g. web-scrape, SQL Table(s), flat file, http, ftp, RPC, REST API
 * Customize Source classes
 3. Create "Stage" Code
+* Encode relationships with other data objects (represented as other warehouses)
 * Define firm warehouse field names for Source
 * Define transformations for Source
 * Create CRUD Code for Source
@@ -135,7 +136,7 @@ These are the typical steps involved in creating a data warehouse from Source da
 * Using the plug-in, create schedules for acquire, stage, check, house
 7. Create APIs for Unified Data Warehouse access
 * Develop suitable APIs as contracts for accessing warehouse
-** See [Warehouse API](#more-about-warehouse-apis)
+* See [Warehouse API](#more-about-warehouse-apis)
 
 # Supporting Concepts
 
@@ -158,10 +159,7 @@ to the rules about the data.  For example, if an "order warehouse" contains Orde
 for Customers, the "customer warehouse" must have the related customer object contained in it.
 
 ## More About Warehouse APIs
-The unified data warehouse will be made up of several warehouse master objects, it
-is typical that an API (e.g. REST API) is developed to provide access to the unified
-warehouse (rather than raw SQL queries).  An example would be, there may be a Customer,
-Order and Sales master all interlinked by various keys.  An API to provide Customer orders
-related to associated Sales would be built to query the masters and provide results to a client.
-One reason for developing APIs atop the warehouse physical storage is for caching of results
-so that scaling can be managed as usage of the warehouse increases.
+The unified data warehouse will be made up of several warehouse master objects. It is typical that an API (e.g. REST API) is developed to provide access to the unified warehouse (rather than raw SQL queries).  An example would be, there may be a Customer, Order and Sales master all interlinked by various keys.  An API to provide Customer orders related to associated Sales would be built to query the masters and provide results to a client.  One reason for developing APIs atop the warehouse physical storage is for caching of results so that scaling can be managed as usage of the warehouse increases.
+
+# More Information
+For more information about these concepts, please contact [Bonum Technologies](mailto:mark@gobonum.com)
