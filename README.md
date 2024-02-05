@@ -15,7 +15,7 @@ Welcome to the Bonum MDM and DWH system documentation.
 
 
 ## Purpose
-The purpose of Bonum Master Data Management and Data Warehouse is to provide a framework for building and maintaining data warehouses through a series of steps that acquire original source data, stage and check the data for errors, refine the data via an override feature, publish the data objects into a warehouse, and then export them into different formats such as RDBMS, parquet files, Redis, Snowflake, etc.  so that it can be used by the enterprise.  Implementing this process will result in the warehouse becoming the "one-version-of-the-truth".
+The purpose of Bonum Master Data Management and Data Warehouse is to provide a framework for building and maintaining data warehouses through a series of steps that acquire original source data, stage and check the data for errors, refine the data using an override feature, publish the data objects into a warehouse, and then export them into different formats such as RDBMS, parquet files, Redis, Snowflake, etc.  so that it can be used by the enterprise.  Implementing this process will result in the warehouse becoming the "one-version-of-the-truth".
 
 ## Logical System Diagram
 ![Bonum Master Data Management](refinery-pipeline.jpg)
@@ -29,7 +29,7 @@ The purpose of Bonum Master Data Management and Data Warehouse is to provide a f
 "Stage" reads acquired data from what the Acquire step has produced.  This step processes the raw vendor data, normalizing the data into firm-agreed field names, reformatting where needed, filtering or ignoring irrelevant data, and then applying overrides in order to repair data that has failed previously-found errors from a Check having been run.  The end of a stage is a proposed set of updates found when comparing the staged results to the previous days worth of warehoused data for the source in question.  The proposed, newly-staged data is then made available to the next step, Check.
 
 ### Check
-"Check" applies tests to the result of the Stage step.  The tests check for the "completeness" and "logical" integrity of the data.  A Check failure halts the steps and communicates results via files and messages to users monitoring the system.  The monitoring of failures and warnings is handled by a [Monitoring Plug-in](#monitoring-system).  A variety of monitoring tools can be plugged in, e.g. Slack, SMS, Email.  An important and typical procedure following a Check failure is [Override](#override-system).  
+"Check" applies tests to the result of the Stage step.  The tests check for the "completeness" and "logical" integrity of the data.  A Check failure halts the steps and communicates results using log files and messages to users monitoring the system.  The monitoring of failures and warnings is handled by a [Monitoring Plug-in](#monitoring-system).  A variety of monitoring tools can be plugged in, e.g. Slack, SMS, Email.  An important and typical procedure following a Check failure is [Override](#override-system).  
 * Read more about [Check tests](#more-about-check-tests)
 
 ### House
@@ -84,7 +84,7 @@ first and then results in the refreshing of any dependent master.
 OLTP updates are handled by a realtime pipeline that is started when
 changes to the source data are detected.  A realtime pipeline still goes through
 the same steps as mentioned above, except the Acquire step is not needed as that
-is provided via a GUI or transactional updates to the source in question.
+is provided by a GUI or transactional updates to the source in question.
 
 ## Preparing for a Data Warehouse Project
 These are the typical steps involved in creating a data warehouse from Source data.
