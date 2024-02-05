@@ -1,14 +1,34 @@
-# "Data-Refinery" (Bonum Data Warehouse Management)
+# Bonum Master Data Management (MDM) and Data Warehouse (DWH) 
+Welcome to the Bonum MDM and DWH system documentation.
+
+# Table of Contents
+1. [Purpose](#purpose)
+2. [Logical System Diagram](#logical-system-diagram)
+3. [Pipeline Steps](#pipeline-steps)
+4. [Override System] (#override-system)
+5. [Pipeline Scheduling System](#pipeline-scheduling-system)
+6. [Monitoring System](#monitoring-system)
+7. [Setting up Batch Pipelines for Warehouses](#setting-up-batch-pipelines-for-warehouses)
+8. [Setting up OLTP Pipelines for Warehouses](#setting-up-oltp-pipelines-for-warehouses)
+9. [Supporting Concepts](#supporting-concepts)
+
+
 ## Purpose
-The purpose of buckstop-refinery is to provide a framework for building and
-maintaining data warehouses by acquiring data, cleansing (refining) through an override
-feature (errors in original source data), publishing into a warehouse, and then exporting
-the data into different formats such as RDBMS, parquet files, Redis, Snowflake, etc.
-so that it can be used by the enterprise.  The warehouse becomes the "one-version-of-the-truth".
+The purpose of Bonum Master Data Management and Data Warehouse is to provide a framework for building and
+maintaining data warehouses through a series of steps that acquire original source data, 
+stage and check the data for errors, refine the data via an override feature, 
+publish the data objects into a warehouse, and then export them
+into different formats such as RDBMS, parquet files, Redis, Snowflake, etc.
+so that it can be used by the enterprise.  Following this process, the warehouse
+becomes the "one-version-of-the-truth".
+
+## Logical System Diagram
+![Bonum Master Data Management](refinery-pipeline.jpg)
 
 ## Pipeline Steps
 ### Acquire
-This step is for downloading original vendor data from an online source,
+"Acquire" is an optional step.<br/>
+"Acquire" is for downloading original vendor data from an online source,
 then uploading it to a destination and making a virtual link to the
 latest version of that data on the basis of a time-slice, usually a calendar
 day, so that logical (current) version of the source can be distinguished
@@ -17,9 +37,10 @@ helps maintain a history of all sources that are being used to create the wareho
 Without this, original sources may be archived (lost) or replaced so that the original
 version cannot be procured from the original source location. In short, we need to
 keep what we processed so that we can rebuild history from nothing.
+* Read more about [OLTP Acquire](#more-about-oltp-acquire).
 
 ### Stage
-This step reads acquired data from what the Acquire step has produced
+"Stage" reads acquired data from what the Acquire step has produced or via an OLTP system.
 The step processes the raw vendor data, normalizing the
 data into firm-agreed field names, reformatting where needed, filtering or 
 ignoring irrelevant data, and then applying overrides in order to repair
@@ -30,67 +51,31 @@ in question.  The proposed newly staged data is then made available to the
 next step, Check.
 
 ### Check
-This step takes the result of the Stage step and applies checks that are
-important to ensure the integrity of the data from a completeness point of
-view and also for accuracy for those data that are present.  By
-"completeness", we mean that the key that uniquely identifies the data
-element is present as expected and has not been unexpectedly removed.
-An "expected removal" would be due to some defined expiration policy for
-a data element, whereas "unexpected removal" would be the opposite -- the
-data appeared at one time in history, should still be present but has
-disappeared due to some error in how the data was produced.  A Check failure
-halts the steps and the failed check details are communicated via files
-and messages to users monitoring the system.  The monitoring of failures
-and warnings is handled by a Monitoring Plug-in.  A variety of monitoring
-tools can be plugged in, e.g. Slack, SMS, Email.  An important and typical
-step following Check is Override.  Override allows for changing data without
-disturbing an original source data, and overrides can be end-dated so they
-are no longer applied when the owner of source data makes corrections.
+"Check" the most important step.  It takes the result of the Stage step and 
+applies tests for the integrity of the data from a completeness and logical point of
+view.  A Check failure halts the steps and the failed check details are communicated via files and messages to users monitoring the system.  The monitoring of failures and warnings is handled by a [Monitoring Plug-in](#monitoring-system).  A variety of monitoring tools can be plugged in, e.g. Slack, SMS, Email.  An important and typical procedure following a Check failure is [Override](#override-system).  Override allows for manual changing of data without disturbing an original source data, and overrides can be end-dated so they are no longer applied when the owner of source data makes corrections.
+* Read more about [Check tests](#more-about-check-tests)
 
 ### House
-If Check succeeds, the final updated file from Stage is symbolically 
-linked to the new warehouse file for the day.  If any tests during Check had failed,
-the House step is not run automatically.  The details for Check results will indicate 
-whether it is advisable and under what conditions it might be that it is appropriate
-for the House step to be run.  The House step can be force-run if it is found that the 
-Check result is acceptable, as in the case of a warning.  The running of individual steps
-in the pipeline is handled by Sequencing System Plug-In.  A variety of sequencing
-plug-ins can be used, such as Jenkins, Apache airflow.
+"House" is done immediately after a Check succeeds.  It very simply moves the final result of the Stage to the new warehouse master. If any tests during Check had failed, the House step is not run automatically.  The details for Check results will indicate whether it is advisable and under what conditions it might be that it is appropriate for the House step to be run.  The House step can be force-run if it is found that the Check result is acceptable, as in the case of a warning.  The running of individual steps in the pipeline is handled by a [Pipeline Flow Plug-In](#pipeline-scheduling-system)
 
 ### Export
-The master object (the warehouse ) is exported into a database or some other representation, e.g.
-CSV, Parquet, HDF5, feather, Snowflake.
+The master object (a single warehouse representation) is exported into a database or some other representation, e.g.  CSV, Parquet, feather, HDF5, Snowflake.  A master is specified for each object in the data warehouse, as defined by the data being modelled.  Typically, a data warehouse will be a logical umbrella that includes several related warehouse masters, each of which is managed by an individual pipeline.
 
 ## Override System
-### Override GUI
-The overrides for erroneous data is controlled by a relational database, where
-the key is the vendor, the region, the file and the valid-from through valid-to
-date.  There will also be a specific field that identifies uniquely the record
-in the staged data (see Stage step).  The key field is matched with the value
-in the database, and the field to be repaired is matched for the old value
-and the old value is replaced with the new value.
+Override is actually a system including a small database and a GUI that allows a support person to override individual data elements of the Source data.
 
-### Override System
-The override software is called during Stage where a lookup of the data to
-repair is performed in the Override DB by the key mentioned above.  The
-software is run as a decorator and replaces the old (erroneous) value with the 
-corrected value according to an override key.  An example would be to historically
-change the salary of an employee if HR had inserted it a day late in the HR
-database for employee salaries.
+### Override GUI
+The overrides for erroneous data is controlled by a relational database, where the key is the vendor, the region, the file and the valid-from through valid-to date.  There will also be a specific field that identifies uniquely the record in the staged data (see Stage step).  The key field is matched with the value in the database, and the field to be repaired is matched for the old value and the old value is replaced with the new value.
+
+### Override Logic
+The override software is called during Stage where a lookup of the data to repair is performed in the Override DB by the key mentioned above.  The software is run as a decorator and replaces the old (erroneous) value with the corrected value according to an override key.  An example would be to historically change the salary of an employee if HR had inserted it a day late in the HR database for employee salaries.
 
 ## Pipeline Scheduling System
-A pipeline or job execution control system can be plugged in. Examples of
-such systems are cron, Apache airflow, Jenkins.  Most systems will
-have a way to declare job dependencies and also be able to display
-an interactive GUI for step monitoring and step operations, such as running
-or cancelling a step.
+A pipeline or job execution control system can be plugged in. Examples of such systems are Apache airflow, Jenkins.  Most systems will have a way to declare job dependencies and also be able to display an interactive GUI for step monitoring and step operations, such as running or cancelling a step.
 
 ## Monitoring System
-While orthogonal to the Pipeline control system, the Monitoring system allows
-any communication stack to be plugged in for visibility, e.g. Slack.
-When notification of a certain priority level or type
-is produced, it appears in the chosen medium, and if that medium supports
-updating status, a user can mark an items with a status such as "In Progress",
+The Monitoring system allows any communication stack to be plugged in for visibility, e.g. Slack with status tracked and visible to the enterprise.  When notification of a certain priority level or type is produced, it appears in the chosen medium, and if that medium supports updating status, a user can mark an items with a status such as "In Progress",
 "Completed", etc.
 
 <!--
@@ -132,18 +117,51 @@ These are the typical steps involved in creating a data warehouse from Source da
 * Understand what data is needed from Source
 * Obtain pre-existing models
 * Work with data owner to identify objects, keys, relationships, sizes, frequencies
-1. Create Acquire Code
+* Understand fundamental completeness and logical rules
+2. Create "Acquire" Code
 * Identify origin of Source data, e.g. web-scrape, SQL Table(s), flat file, http, ftp, RPC, REST API
 * Customize Source classes
-1. Create Stage Code
+3. Create "Stage" Code
 * Define firm warehouse field names for Source
 * Define transformations for Source
 * Create CRUD Code for Source
-1. Create Check Tests
-* Define critical and warning checks
+4. Create "Check" Tests
 * Define completeness checks
-* Define integrity checks
-1. Create Export Rules
+* Define logical checks
+* Categorize check severity as critical, warning or info
+5. Create "Export" Rules
 * Map Master to Warehouse physical layer, e.g. master object maps into Snowflake table
-1. Create Pipeline Schedule
+6. Create Pipeline Schedule
 * Using the plug-in, create schedules for acquire, stage, check, house
+7. Create APIs for Unified Data Warehouse access
+* Develop suitable APIs as contracts for accessing warehouse
+** See [Warehouse API](#more-about-warehouse-apis)
+
+# Supporting Concepts
+
+## More About OLTP Acquire
+OLTP Acquire is the hooking of the warehouse pipeline up to an OLTP source, i.e. a real-time
+updating of a database or other source of data such as a realtime feed of price data.
+
+## More About Check Tests
+All tests can be related to completeness and logical categories of checks.
+### Completeness
+A successful "completeness" test makes sure the key that uniquely identifies the data
+element is present as expected and has not been removed.
+An "expected removal" would be due to some defined expiration policy for
+a data element, whereas "unexpected removal" would be the opposite -- the
+data appeared at one time in history, should still be present but has
+been removed erroneously due to how the data was produced.  
+### Logical
+A successful "logical" test makes sure the data is correct logically according
+to the rules about the data.  For example, if an "order warehouse" contains Order objects
+for Customers, the "customer warehouse" must have the related customer object contained in it.
+
+## More About Warehouse APIs
+The unified data warehouse will be made up of several warehouse master objects, it
+is typical that an API (e.g. REST API) is developed to provide access to the unified
+warehouse (rather than raw SQL queries).  An example would be, there may be a Customer,
+Order and Sales master all interlinked by various keys.  An API to provide Customer orders
+related to associated Sales would be built to query the masters and provide results to a client.
+One reason for developing APIs atop the warehouse physical storage is for caching of results
+so that scaling can be managed as usage of the warehouse increases.
