@@ -22,33 +22,24 @@ The purpose of Bonum Master Data Management and Data Warehouse is to provide a f
 
 ## Pipeline Steps
 ### Acquire
-"Acquire" is an optional step.<br/>
-"Acquire" is for downloading original vendor data from an online source, then uploading it to a destination and making a virtual "link" to the latest version of that data on the basis of a time-slice, usually a calendar day, so that logical (current) version of the source can be distinguished from previous physical versions of the file.  This step is important because it helps maintain a history of all sources that are being used to create the warehouse.  Without this, original sources may be archived (lost) or replaced so that the original version cannot be procured from the original source location. In short, we need to keep what we processed so that we can rebuild history from nothing.
+"Acquire" is for managing original source data that is used to construct the warehouse.  This is done by downloading, reading or extracting original vendor data from a data source, then uploading it to a destination and making a virtual latest version of that data on the basis of a time-slice, usually a calendar day, so that that version is known as the "logical" version of the source can be distinguished from previous physical versions of the file, physical versions being temporal versions that may change even during the time-slice of a day.  This step is important because it helps maintain a history of all sources that are being used to create the warehouse.  Without this, original sources may be archived (lost) or replaced so that the original version cannot be procured from the original source location. In short, we need to keep what we processed so that we can rebuild history from nothing.
 * Read more about [OLTP Acquire](#more-about-oltp-acquire).
 
 ### Stage
-"Stage" reads acquired data from what the Acquire step has produced or via an OLTP system.
-The step processes the raw vendor data, normalizing the
-data into firm-agreed field names, reformatting where needed, filtering or 
-ignoring irrelevant data, and then applying overrides in order to repair
-data that has failed previously-found errors from a Check having been run.
-The end of a stage is a proposed set of updates found when comparing the
-staged results to the previous days worth of warehoused data for the source
-in question.  The proposed newly staged data is then made available to the
-next step, Check.
+"Stage" reads acquired data from what the Acquire step has produced.  The step processes the raw vendor data, normalizing the data into firm-agreed field names, reformatting where needed, filtering or ignoring irrelevant data, and then applying overrides in order to repair data that has failed previously-found errors from a Check having been run.  The end of a stage is a proposed set of updates found when comparing the staged results to the previous days worth of warehoused data for the source in question.  The proposed newly staged data is then made available to the next step, Check.
 
 ### Check
-"Check" the most important step.  It takes the result of the Stage step and applies tests for the integrity of the data from a completeness and logical point of view.  A Check failure halts the steps and the failed check details are communicated via files and messages to users monitoring the system.  The monitoring of failures and warnings is handled by a [Monitoring Plug-in](#monitoring-system).  A variety of monitoring tools can be plugged in, e.g. Slack, SMS, Email.  An important and typical procedure following a Check failure is [Override](#override-system).  Override allows for manual changing of data without disturbing an original source data, and overrides can be end-dated so they are no longer applied when the owner of source data makes corrections.
+"Check" is the most important step.  It applies test to the result of the Stage step.  The  tests check for the "completeness" and "logical" integrity of the data.  A Check failure halts the steps and the failed check details are communicated via files and messages to users monitoring the system.  The monitoring of failures and warnings is handled by a [Monitoring Plug-in](#monitoring-system).  A variety of monitoring tools can be plugged in, e.g. Slack, SMS, Email.  An important and typical procedure following a Check failure is [Override](#override-system).  
 * Read more about [Check tests](#more-about-check-tests)
 
 ### House
-"House" is done immediately after a Check succeeds.  It very simply moves the final result of the Stage to the new warehouse master. If any tests during Check had failed, the House step is not run automatically.  The details for Check results will indicate whether it is advisable and under what conditions it might be that it is appropriate for the House step to be run.  The House step can be force-run if it is found that the Check result is acceptable, as in the case of a warning.  The running of individual steps in the pipeline is handled by a [Pipeline Flow Plug-In](#pipeline-scheduling-system)
+"House" is done immediately after a Check succeeds.  It simply moves the final result of the Stage to the new warehouse master. If any tests during Check had failed, the House step is not run automatically.  The details for Check results will indicate whether it is advisable and under what conditions it might be that it is appropriate for the House step to be run.  The House step can be forced to run if it is found that the Check result is acceptable, as in the case of a warning.  The running of individual steps in the pipeline is handled by a [Pipeline Flow Plug-In](#pipeline-scheduling-system)
 
 ### Export
 "Export" stores the master object (a single warehouse representation) into a physical representation available for the enterprise, e.g.  CSV, Parquet, feather, HDF5, Snowflake.  A master is specified for each object in the data warehouse, as defined by the data being modelled.  Typically, a data warehouse will be a logical umbrella that includes several related warehouse masters, each of which is managed by an individual pipeline.
 
 ## Override System
-The Override System includes a database and a GUI that allows a support person to override individual data elements of the Source data.
+The Override System allows for manual changing of data without disturbing an original source of data, and overrides can be end-dated so they are no longer applied when the owner of source data makes corrections.  It includes a database and a GUI that allows a support person to override individual data elements of the Source data.
 
 ### Override GUI
 An override is controlled by a relational database, where the key is the source, the file and the valid-from through valid-to date.  There will also be a specific field that uniquely identifies the record in the staged data (see Stage step).  The key field is matched with the value in the database, and the field to be repaired is matched for the old value and the old value is replaced with the new value.
