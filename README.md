@@ -23,7 +23,7 @@ The purpose of Bonum Master Data Management and Data Warehouse is to provide a f
 ## Pipeline Steps
 ### Acquire
 "Acquire" is an optional step.<br/>
-"Acquire" is for downloading original vendor data from an online source, then uploading it to a destination and making a virtual link to the latest version of that data on the basis of a time-slice, usually a calendar day, so that logical (current) version of the source can be distinguished from previous physical versions of the file.  This step is important because it helps maintain a history of all sources that are being used to create the warehouse.  Without this, original sources may be archived (lost) or replaced so that the original version cannot be procured from the original source location. In short, we need to keep what we processed so that we can rebuild history from nothing.
+"Acquire" is for downloading original vendor data from an online source, then uploading it to a destination and making a virtual "link" to the latest version of that data on the basis of a time-slice, usually a calendar day, so that logical (current) version of the source can be distinguished from previous physical versions of the file.  This step is important because it helps maintain a history of all sources that are being used to create the warehouse.  Without this, original sources may be archived (lost) or replaced so that the original version cannot be procured from the original source location. In short, we need to keep what we processed so that we can rebuild history from nothing.
 * Read more about [OLTP Acquire](#more-about-oltp-acquire).
 
 ### Stage
@@ -48,19 +48,19 @@ next step, Check.
 "Export" stores the master object (a single warehouse representation) into a physical representation available for the enterprise, e.g.  CSV, Parquet, feather, HDF5, Snowflake.  A master is specified for each object in the data warehouse, as defined by the data being modelled.  Typically, a data warehouse will be a logical umbrella that includes several related warehouse masters, each of which is managed by an individual pipeline.
 
 ## Override System
-Override is actually a system including a small database and a GUI that allows a support person to override individual data elements of the Source data.
+The Override System includes a database and a GUI that allows a support person to override individual data elements of the Source data.
 
 ### Override GUI
-An override for erroneous data is controlled by a relational database, where the key is the source, the file and the valid-from through valid-to date.  There will also be a specific field that uniquely identifies the record in the staged data (see Stage step).  The key field is matched with the value in the database, and the field to be repaired is matched for the old value and the old value is replaced with the new value.
+An override is controlled by a relational database, where the key is the source, the file and the valid-from through valid-to date.  There will also be a specific field that uniquely identifies the record in the staged data (see Stage step).  The key field is matched with the value in the database, and the field to be repaired is matched for the old value and the old value is replaced with the new value.
 
 ### Override Logic
-The override software is called during Stage where a lookup of the data to repair is performed in the Override DB by the key mentioned above.  The software is run as a decorator and replaces the old (erroneous) value with the corrected value according to an override key.  An example would be to historically change the salary of an employee if HR had inserted it a day late in the HR database for employee salaries.
+The override is applied during Stage where a lookup of the data to repair is performed in the Override DB by the key mentioned above.  The software is run as a decorator and replaces the old value with the corrected value according to an override key.  An example would be to historically change the salary of an employee if HR had inserted it a day late in the HR database for employee salaries.
 
 ## Pipeline Scheduling System
 A pipeline or job execution control system can be plugged in. Examples of such systems are Apache airflow, Jenkins.  Most systems will have a way to declare job dependencies and also be able to display an interactive GUI for step monitoring and step operations, such as running or cancelling a step.
 
 ## Monitoring System
-The Monitoring system allows any communication stack to be plugged in for visibility, e.g. Slack with status tracked and visible to the enterprise.  When notification of a certain priority level or type is produced, it appears in the chosen medium, and if that medium supports updating status, a user can mark an items with a status such as "In Progress",
+The Monitoring system allows any communication stack to be plugged in for visibility, e.g. Slack with status tracked and visible to the enterprise.  When notification of a certain priority level or type is produced, it appears in the chosen medium, and if that medium supports updating status, a user can mark an item with a status such as "In Progress",
 "Completed", etc.
 
 <!--
@@ -81,7 +81,7 @@ the pipeline step in the GUI and instructing the GUI to Run the step.
 -->
 
 ## Setting up Batch Pipelines for Warehouses
-In practice a firms data is composed of several interdependent warehouse master
+In practice, a firms data is composed of several interdependent warehouse master
 objects that are related by keys.
 
 The management of a single warehouse master is the job of a single pipeline process
