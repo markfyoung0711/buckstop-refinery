@@ -1,4 +1,4 @@
-# Bonum Master Data Management (MDM) and Data Warehouse (DWH) 
+# Bonum Master Data Management (MDM) and Data Warehouse (DWH)
 Welcome to the Bonum MDM and DWH system documentation.
 
 # Table of Contents
@@ -8,19 +8,14 @@ Welcome to the Bonum MDM and DWH system documentation.
 4. [Override System](#override-system)
 5. [Pipeline Scheduling System](#pipeline-scheduling-system)
 5. [Monitoring System](#monitoring-system)
+6. [Preparing For a Datawarehouse Project](#preparing-for-a-data-warehouse-project)
 7. [Setting up Batch Pipelines for Warehouses](#setting-up-batch-pipelines-for-warehouses)
 8. [Setting up OLTP Pipelines for Warehouses](#setting-up-oltp-pipelines-for-warehouses)
 9. [Supporting Concepts](#supporting-concepts)
 
 
 ## Purpose
-The purpose of Bonum Master Data Management and Data Warehouse is to provide a framework for building and
-maintaining data warehouses through a series of steps that acquire original source data, 
-stage and check the data for errors, refine the data via an override feature, 
-publish the data objects into a warehouse, and then export them
-into different formats such as RDBMS, parquet files, Redis, Snowflake, etc.
-so that it can be used by the enterprise.  Following this process, the warehouse
-becomes the "one-version-of-the-truth".
+The purpose of Bonum Master Data Management and Data Warehouse is to provide a framework for building and maintaining data warehouses through a series of steps that acquire original source data, stage and check the data for errors, refine the data via an override feature, publish the data objects into a warehouse, and then export them into different formats such as RDBMS, parquet files, Redis, Snowflake, etc.  so that it can be used by the enterprise.  Following this process, the warehouse becomes the "one-version-of-the-truth".
 
 ## Logical System Diagram
 ![Bonum Master Data Management](refinery-pipeline.jpg)
@@ -28,15 +23,7 @@ becomes the "one-version-of-the-truth".
 ## Pipeline Steps
 ### Acquire
 "Acquire" is an optional step.<br/>
-"Acquire" is for downloading original vendor data from an online source,
-then uploading it to a destination and making a virtual link to the
-latest version of that data on the basis of a time-slice, usually a calendar
-day, so that logical (current) version of the source can be distinguished
-from previous physical versions of the file.  This step is important because it 
-helps maintain a history of all sources that are being used to create the warehouse.
-Without this, original sources may be archived (lost) or replaced so that the original
-version cannot be procured from the original source location. In short, we need to
-keep what we processed so that we can rebuild history from nothing.
+"Acquire" is for downloading original vendor data from an online source, then uploading it to a destination and making a virtual link to the latest version of that data on the basis of a time-slice, usually a calendar day, so that logical (current) version of the source can be distinguished from previous physical versions of the file.  This step is important because it helps maintain a history of all sources that are being used to create the warehouse.  Without this, original sources may be archived (lost) or replaced so that the original version cannot be procured from the original source location. In short, we need to keep what we processed so that we can rebuild history from nothing.
 * Read more about [OLTP Acquire](#more-about-oltp-acquire).
 
 ### Stage
@@ -51,9 +38,7 @@ in question.  The proposed newly staged data is then made available to the
 next step, Check.
 
 ### Check
-"Check" the most important step.  It takes the result of the Stage step and 
-applies tests for the integrity of the data from a completeness and logical point of
-view.  A Check failure halts the steps and the failed check details are communicated via files and messages to users monitoring the system.  The monitoring of failures and warnings is handled by a [Monitoring Plug-in](#monitoring-system).  A variety of monitoring tools can be plugged in, e.g. Slack, SMS, Email.  An important and typical procedure following a Check failure is [Override](#override-system).  Override allows for manual changing of data without disturbing an original source data, and overrides can be end-dated so they are no longer applied when the owner of source data makes corrections.
+"Check" the most important step.  It takes the result of the Stage step and applies tests for the integrity of the data from a completeness and logical point of view.  A Check failure halts the steps and the failed check details are communicated via files and messages to users monitoring the system.  The monitoring of failures and warnings is handled by a [Monitoring Plug-in](#monitoring-system).  A variety of monitoring tools can be plugged in, e.g. Slack, SMS, Email.  An important and typical procedure following a Check failure is [Override](#override-system).  Override allows for manual changing of data without disturbing an original source data, and overrides can be end-dated so they are no longer applied when the owner of source data makes corrections.
 * Read more about [Check tests](#more-about-check-tests)
 
 ### House
@@ -66,7 +51,7 @@ The master object (a single warehouse representation) is exported into a databas
 Override is actually a system including a small database and a GUI that allows a support person to override individual data elements of the Source data.
 
 ### Override GUI
-The overrides for erroneous data is controlled by a relational database, where the key is the vendor, the region, the file and the valid-from through valid-to date.  There will also be a specific field that identifies uniquely the record in the staged data (see Stage step).  The key field is matched with the value in the database, and the field to be repaired is matched for the old value and the old value is replaced with the new value.
+An override for erroneous data is controlled by a relational database, where the key is the source, the file and the valid-from through valid-to date.  There will also be a specific field that uniquely identifies the record in the staged data (see Stage step).  The key field is matched with the value in the database, and the field to be repaired is matched for the old value and the old value is replaced with the new value.
 
 ### Override Logic
 The override software is called during Stage where a lookup of the data to repair is performed in the Override DB by the key mentioned above.  The software is run as a decorator and replaces the old (erroneous) value with the corrected value according to an override key.  An example would be to historically change the salary of an employee if HR had inserted it a day late in the HR database for employee salaries.
@@ -86,7 +71,7 @@ Otherwise use off the shelf products, Jenkins is easy setup and GUI.
 Configuration files are supplied to define the steps and arguments to run
 for the steps.  The arguments to the pipeline commands, implememented as
 a Linux CLI, differ for each pipeline.  One step indicates the next step
-to be executed after successful completion.  
+to be executed after successful completion.
 
 ### Pipeline GUI
 The pipeline status should be visible in a GUI so that operators can notice
@@ -152,7 +137,7 @@ element is present as expected and has not been removed.
 An "expected removal" would be due to some defined expiration policy for
 a data element, whereas "unexpected removal" would be the opposite -- the
 data appeared at one time in history, should still be present but has
-been removed erroneously due to how the data was produced.  
+been removed erroneously due to how the data was produced.
 ### Logical
 A successful "logical" test makes sure the data is correct logically according
 to the rules about the data.  For example, if an "order warehouse" contains Order objects
