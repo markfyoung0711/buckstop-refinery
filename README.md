@@ -1,4 +1,4 @@
-# "buckstop-refinery"
+# "Data-Refinery" (Bonum Data Warehouse Management)
 ## Purpose
 The purpose of buckstop-refinery is to provide a framework for building and
 maintaining data warehouses by acquiring data, cleansing (refining) through an override
@@ -9,11 +9,14 @@ so that it can be used by the enterprise.  The warehouse becomes the "one-versio
 ## Pipeline Steps
 ### Acquire
 This step is for downloading original vendor data from an online source,
-and then uploading it to a destination and making a virtual link to the
+then uploading it to a destination and making a virtual link to the
 latest version of that data on the basis of a time-slice, usually a calendar
-day.  This step is important because it helps maintain a history of all
-sources that are being used to create the warehouse.  Without this, original
-sources may be archived.
+day, so that logical (current) version of the source can be distinguished
+from previous physical versions of the file.  This step is important because it 
+helps maintain a history of all sources that are being used to create the warehouse.
+Without this, original sources may be archived (lost) or replaced so that the original
+version cannot be procured from the original source location. In short, we need to
+keep what we processed so that we can rebuild history from nothing.
 
 ### Stage
 This step reads acquired data from what the Acquire step has produced
@@ -45,13 +48,13 @@ disturbing an original source data, and overrides can be end-dated so they
 are no longer applied when the owner of source data makes corrections.
 
 ### House
-If all checks succeed, the final updated file from Stage is symbolically 
-linked to the new warehouse file for the day.  If any check had failed,
-then the House step is not run automatically.  The House step can be force-run
-if it is found that the Check result is acceptable, as in the case of a warning.
-The details for Check results will indicate whether it is advisable and under what conditions
-it might be that the House step could be run anyway.  The running of individual
-steps in the pipeline is handled by Sequencing System Plug-In.  A variety of sequencing
+If Check succeeds, the final updated file from Stage is symbolically 
+linked to the new warehouse file for the day.  If any tests during Check had failed,
+the House step is not run automatically.  The details for Check results will indicate 
+whether it is advisable and under what conditions it might be that it is appropriate
+for the House step to be run.  The House step can be force-run if it is found that the 
+Check result is acceptable, as in the case of a warning.  The running of individual steps
+in the pipeline is handled by Sequencing System Plug-In.  A variety of sequencing
 plug-ins can be used, such as Jenkins, Apache airflow.
 
 ### Export
@@ -77,8 +80,8 @@ database for employee salaries.
 
 ## Pipeline Scheduling System
 A pipeline or job execution control system can be plugged in. Examples of
-such systems are cron, Apache airflow, Jenkins.  Most systems are going
-to have a way to declare job dependencies and also be able to display
+such systems are cron, Apache airflow, Jenkins.  Most systems will
+have a way to declare job dependencies and also be able to display
 an interactive GUI for step monitoring and step operations, such as running
 or cancelling a step.
 
@@ -89,6 +92,10 @@ When notification of a certain priority level or type
 is produced, it appears in the chosen medium, and if that medium supports
 updating status, a user can mark an items with a status such as "In Progress",
 "Completed", etc.
+
+<!--
+Firms sometimes have configuration for defining pipeline.
+Otherwise use off the shelf products, Jenkins is easy setup and GUI.
 
 ### Pipeline Dependency Definition
 Configuration files are supplied to define the steps and arguments to run
@@ -101,3 +108,42 @@ The pipeline status should be visible in a GUI so that operators can notice
 when something is failed and needs investigation.  If a Check step failure
 is deemed to be acceptable, then the House step can be run by clicking on
 the pipeline step in the GUI and instructing the GUI to Run the step.
+-->
+
+## Setting up Batch Pipelines for Warehouses
+In practice a firms data is composed of several interdependent warehouse master
+objects that are related by keys.
+
+The management of a single warehouse master is the job of a single pipeline process
+as defined above.  Pipelines are sequenced together in dependency order so that
+a master (e.g. customer) that is required by another master (e.g. order) is refreshed
+first and then results in the refreshing of any dependent master.
+
+## Setting up OLTP Pipelines for Warehouses
+OLTP updates are handled by a realtime pipeline that is started when
+changes to the source data are detected.  A realtime pipeline still goes through
+the same steps as mentioned above, except the Acquire step is not needed as that
+is provided via a GUI or transactional updates to the source in question.
+
+## Preparing for a Data Warehouse Project
+These are the typical steps involved in creating a data warehouse from Source data.
+
+1. Model Source Data
+* Understand what data is needed from Source
+* Obtain pre-existing models
+* Work with data owner to identify objects, keys, relationships, sizes, frequencies
+1. Create Acquire Code
+* Identify origin of Source data, e.g. web-scrape, SQL Table(s), flat file, http, ftp, RPC, REST API
+* Customize Source classes
+1. Create Stage Code
+* Define firm warehouse field names for Source
+* Define transformations for Source
+* Create CRUD Code for Source
+1. Create Check Tests
+* Define critical and warning checks
+* Define completeness checks
+* Define integrity checks
+1. Create Export Rules
+* Map Master to Warehouse physical layer, e.g. master object maps into Snowflake table
+1. Create Pipeline Schedule
+* Using the plug-in, create schedules for acquire, stage, check, house
