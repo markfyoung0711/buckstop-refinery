@@ -15,18 +15,18 @@ Welcome to the Bonum MDM and DWH system documentation.
 
 
 ## Purpose
-The purpose of Bonum Master Data Management and Data Warehouse is to provide a framework for building and maintaining data warehouses through a series of steps that acquire original source data, stage and check the data for errors, refine the data using an override feature, publish the data objects into a warehouse, and then export them into different formats such as RDBMS, parquet files, Redis, Snowflake, etc.  so that it can be used by the enterprise.  Implementing this process will result in the warehouse becoming the "one-version-of-the-truth".
+The purpose of Bonum Master Data Management and Data Warehouse is to provide a framework for building and maintaining data warehouses through a series of steps that preserve original source data, stage and check the data for errors, refine the data using an override feature, publish the data objects into a warehouse, and then export them into different formats such as RDBMS, parquet files, Redis, Snowflake, etc.  so that it can be used by the enterprise.  Implementing this process will result in the warehouse becoming the "one-version-of-the-truth".
 
 ## Logical System Diagram
 ![Bonum Master Data Management](refinery-pipeline.jpg)
 
 ## Pipeline Steps
-### Acquire
-"Acquire" is for managing original source data that is used to construct the warehouse.  This is done by downloading, reading or extracting original vendor data from a data source, then uploading it to a destination and making a virtual latest version of that data on the basis of a time-slice, usually a calendar day. This "logical" version of the data source can be distinguished from previous physical versions of the source.  This step is important because it allows the enterprise to track changes to a source of data even within a day, and guarantees a history of all sources used to create the warehouse.  Without this, original sources may be archived (lost) or replaced so that the original version cannot be procured from the original source location. In short, we need to keep what we processed so that we can rebuild history from nothing.
-* Read more about [OLTP Acquire](#more-about-oltp-acquire).
+### Preserve
+"Preserve" is for managing original source data that is used to construct the warehouse.  This is done by downloading, reading or extracting original vendor data from a data source, then uploading it to a destination and making a virtual latest version of that data on the basis of a time-slice, usually a calendar day. This "logical" version of the data source can be distinguished from previous physical versions of the source.  This step is important because it allows the enterprise to track changes to a source of data even within a day, and guarantees a history of all sources used to create the warehouse.  Without this, original sources may be archived (lost) or replaced so that the original version cannot be procured from the original source location. In short, we need to keep what we processed so that we can rebuild history from nothing.
+* Read more about [OLTP Preserve](#more-about-oltp-preserve).
 
 ### Stage
-"Stage" reads acquired data from what the Acquire step has produced.  This step processes the raw vendor data, normalizing the data into firm-agreed field names, reformatting where needed, filtering or ignoring irrelevant data, and then applying overrides in order to repair data that has failed previously-found errors from a Check having been run.  The end of a stage is a proposed set of updates found when comparing the staged results to the previous days worth of warehoused data for the source in question.  The proposed, newly-staged data is then made available to the next step, Check.
+"Stage" reads data from what the Preserve step has produced.  This step processes the raw vendor data, normalizing the data into firm-agreed field names, reformatting where needed, filtering or ignoring irrelevant data, and then applying overrides in order to repair data that has failed previously-found errors from a Check having been run.  The end of a stage is a proposed set of updates found when comparing the staged results to the previous days worth of warehoused data for the source in question.  The proposed, newly-staged data is then made available to the next step, Check.
 
 ### Check
 "Check" applies tests to the result of the Stage step.  The tests check for the "completeness" and "logical" integrity of the data.  A Check failure halts the steps and communicates results using log files and messages to users monitoring the system.  The monitoring of failures and warnings is handled by a [Monitoring Plug-in](#monitoring-system).  A variety of monitoring tools can be plugged in, e.g. Slack, SMS, Email.  An important and typical procedure following a Check failure is [Override](#override-system).  
@@ -83,7 +83,7 @@ first and then results in the refreshing of any dependent master.
 ## Setting up OLTP Pipelines for Warehouses
 OLTP updates are handled by a realtime pipeline that is started when
 changes to the source data are detected.  A realtime pipeline still goes through
-the same steps as mentioned above, except the Acquire step is not needed as that
+the same steps as mentioned above, except the Preserve step is not needed as that
 is provided by a GUI or transactional updates to the source in question.
 
 ## Preparing for a Data Warehouse Project
@@ -94,7 +94,7 @@ These are the typical steps involved in creating a data warehouse from Source da
 * Obtain pre-existing models
 * Work with data owner to identify objects, keys, relationships, sizes, frequencies
 * Understand fundamental completeness and logical rules
-2. Create "Acquire" Code
+2. Create "Preserve" Code
 * Identify origin of Source data, e.g. web-scrape, SQL Table(s), flat file, http, ftp, RPC, REST API
 * Customize Source classes
 3. Create "Stage" Code
@@ -109,15 +109,15 @@ These are the typical steps involved in creating a data warehouse from Source da
 5. Create "Export" Rules
 * Map Master to Warehouse physical layer, e.g. master object maps into Snowflake table
 6. Create Pipeline Schedule
-* Using the plug-in, create schedules for acquire, stage, check, house
+* Using the plug-in, create schedules for preserve, stage, check, house
 7. Create APIs for Unified Data Warehouse access
 * Develop suitable APIs as contracts for accessing warehouse
 * See [Warehouse API](#more-about-warehouse-apis)
 
 # Supporting Concepts
 
-## More About OLTP Acquire
-OLTP Acquire is the hooking of the warehouse pipeline up to an OLTP source, i.e. a real-time
+## More About OLTP Preserve
+OLTP Preserve is the hooking of the warehouse pipeline up to an OLTP source, i.e. a real-time
 updating of a database or other source of data such as a realtime feed of price data.
 
 ## More About Check Tests
