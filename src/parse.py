@@ -83,14 +83,9 @@ def parse(input_directory, output_directory):
         1__FY24_Product_Sales_Slicer.Sheet6.csv
     '''
 
-    # catalog file is a text file that relates the original files to the parsed files
-    catalog = []
-    catalog_filename = 'catalog.txt'
-
     for xls_file_number, sharepoint_filename in enumerate(sharepoint_files.keys()):
-        # sheets of interest
+        # sheets of interest based on config above
         sheets_of_interest = sharepoint_files[sharepoint_filename]
-        num_sheets_of_interest = len(sheets_of_interest)
         # output filename: remove .xlsx suffix and substitute '.' "'", and space with "_"
         adjusted_sharepoint_filename = re.sub(r"\.xlsx", '', sharepoint_filename)
         adjusted_sharepoint_filename = re.sub(r"[\. ']", '_', adjusted_sharepoint_filename)
@@ -100,8 +95,6 @@ def parse(input_directory, output_directory):
         log.info(f'Parsing file {sharepoint_filename}/...')
         xls = pd.ExcelFile(sharepoint_filename)
         sheets_of_interest = set(sheets_of_interest).intersection(set(xls.sheet_names))
-        if len(sheets_of_interest) != num_sheets_of_interest:
-            import ipdb; ipdb.set_trace()
 
         for sheet_number, sheet_name in enumerate(sheets_of_interest):
             log.info(f'Parsing sheet {sheet_name}...')
@@ -121,14 +114,6 @@ def parse(input_directory, output_directory):
             output_file = f'{output_directory}/{adjusted_sharepoint_filename}.{new_sheet_name}.csv'
             # check if # of columns parsed match # fields parsed
             df.to_csv(output_file)
-            catalog.append(CatalogEntry(output_file, df.shape, sharepoint_filename, sheet_name))
-
-    catalog_filename = 'catalog.txt'
-    with open(catalog_filename, 'w') as catalog_file:
-        for entry in catalog:
-            catalog_file.write(str(entry) + '\n')
-
-    log.info(f'check {catalog_filename} for parsed results')
 
 
 if __name__ == "__main__":
