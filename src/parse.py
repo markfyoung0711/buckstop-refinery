@@ -53,7 +53,8 @@ sharepoint_files = {
 @click.command('parse')
 @click.option("-i", "--input-directory", help="location of SmithSystem Clay files")
 @click.option("-o", "--output-directory", help="location of parsed sheets")
-def parse(input_directory, output_directory):
+@click.option("-s", "--selected-sheets", is_flag=True, default=False, help="parse selected sheets")
+def parse(input_directory, output_directory, selected_sheets):
     '''
     The function parses the SmithSystem files called Clay's files from the Sharepoint
     shared by Andrea N.
@@ -65,6 +66,7 @@ def parse(input_directory, output_directory):
     -----------
     input-directory: str, the directory to where Sharepoint .xlsx files have been downloaded
     output-directory: str, the directory where the parsed sheets are saved
+    selected-sheets: bool, (default: False) if True, only selected sheets are parsed, else, all sheets
 
     the format of the filename in the output directory is roughly:
         <name of the xlsx file>.<name of sheet>.csv
@@ -83,9 +85,14 @@ def parse(input_directory, output_directory):
         1__FY24_Product_Sales_Slicer.Sheet6.csv
     '''
 
+    # catalog file is a text file that relates the original files to the parsed files
+    catalog = []
+    catalog_filename = 'catalog.txt'
+
     for xls_file_number, sharepoint_filename in enumerate(sharepoint_files.keys()):
-        # sheets of interest based on config above
-        sheets_of_interest = sharepoint_files[sharepoint_filename]
+        # sheets of interest
+        selected_sheets_of_interest = sharepoint_files[sharepoint_filename]
+
         # output filename: remove .xlsx suffix and substitute '.' "'", and space with "_"
         adjusted_sharepoint_filename = re.sub(r"\.xlsx", '', sharepoint_filename)
         adjusted_sharepoint_filename = re.sub(r"[\. ']", '_', adjusted_sharepoint_filename)
@@ -94,7 +101,12 @@ def parse(input_directory, output_directory):
         sharepoint_filename = f'{input_directory}/{sharepoint_filename}'
         log.info(f'Parsing file {sharepoint_filename}/...')
         xls = pd.ExcelFile(sharepoint_filename)
-        sheets_of_interest = set(sheets_of_interest).intersection(set(xls.sheet_names))
+
+        if 'Order Analysis' in sharepoint_filename:
+            import pdb;pdb.set_trace()
+        sheets_of_interest = set(xls.sheet_names)
+        if selected_sheets:
+            sheets_of_interest = set(selected_sheets_of_interest).intersection(set(xls.sheet_names))
 
         for sheet_number, sheet_name in enumerate(sheets_of_interest):
             log.info(f'Parsing sheet {sheet_name}...')
@@ -114,6 +126,14 @@ def parse(input_directory, output_directory):
             output_file = f'{output_directory}/{adjusted_sharepoint_filename}.{new_sheet_name}.csv'
             # check if # of columns parsed match # fields parsed
             df.to_csv(output_file)
+            catalog.append(CatalogEntry(output_file, df.shape, sharepoint_filename, sheet_name))
+
+    catalog_filename = 'catalog.txt'
+    with open(catalog_filename, 'w') as catalog_file:
+        for entry in catalog:
+            catalog_file.write(str(entry) + '\n')
+
+    log.info(f'check {catalog_filename} for parsed results')
 
 
 if __name__ == "__main__":
