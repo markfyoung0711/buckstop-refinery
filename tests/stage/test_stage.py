@@ -1,3 +1,4 @@
+import pandas as pd
 from datetime import datetime
 
 from src.stage.stage import Stage
@@ -12,4 +13,4 @@ def test_stage():
     stage = Stage(vendor="test", date=test_date)
     assert stage.vendor == "test"
     result = stage.run()
-    assert is_instance(result, pd.DataFrame)
+    assert(isinstance(df, pd.DataFrame))
