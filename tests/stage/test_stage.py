@@ -13,4 +13,4 @@ def test_stage():
     stage = Stage(vendor="test", date=test_date)
     assert stage.vendor == "test"
     result = stage.run()
-    assert(isinstance(df, pd.DataFrame))
+    assert isinstance(result, pd.DataFrame)

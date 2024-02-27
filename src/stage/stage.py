@@ -1,3 +1,5 @@
+import pandas as pd
+
 from dataclasses import dataclass
 
 
@@ -9,4 +11,4 @@ class Stage:
     pass
 
     def run(self):
-        return False
+        return pd.DataFrame()
