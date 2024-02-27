@@ -3,6 +3,8 @@ import os
 from dataclasses import dataclass
 from datetime import datetime
 
+# TODO: implement as AirByte sources so as to support all connectors supported by Airbyte
+
 
 @dataclass
 class Vendor:
@@ -20,3 +22,6 @@ class Vendor:
         self.path = (
             f"{vendor_root}/{vendor_name}/{vendor_date:%Y/%m/%d}/{vendor_filename}"
         )
+
+    def get_path(self):
+        return f"{self.vendor_root}/{self.vendor_name}/{self.vendor_date:%Y/%m/%d}/{self.vendor_filename}"
