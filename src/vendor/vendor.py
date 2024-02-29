@@ -1,9 +1,13 @@
-import os
-
 from dataclasses import dataclass
 from datetime import datetime
 
 # TODO: implement as AirByte sources so as to support all connectors supported by Airbyte
+"""
+Airbyte Actor (Source) input: serialized json message to configure
+                      output: serialized json message to log (AirbyteMessage)
+    spec() -> ConnectorSpecification
+    check(Config) -> AirbyteConnectionStatus
+"""
 
 
 @dataclass

@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 @dataclass
-class SmithHistoricalOrders(Vendor):
+class VendorSmithHistoricalOrders(Vendor):
     """Specialization for Smith Historical Orders"""
 
     vendor_root: str
