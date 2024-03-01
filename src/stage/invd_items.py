@@ -1,35 +1,44 @@
-import pandas as pd
 import re
+import sys
 
-# config what to read in xlsx file.
-sharepoint_filename = '1. FY24 Product Sales Slicer.xlsx'
-sheet_name = '''Inv'd Items Report'''
+import pandas as pd
 
-xls = pd.ExcelFile(sharepoint_filename)
-df = pd.read_excel(xls, sheet_name=sheet_name)
+def parse(input_filename, sheet_name='''Inv'd Items Report'''):
+    '''
+    open xlsx file for sheet name, parse it and return as df
 
-# renames of int named columns, e.g. 1
-renames = {}
-int_cols = [x for x in list(df.columns) if isinstance(x, int)]
-for col in int_cols:
-    renames[col] = 'int' + str(col)
+    Parameters:
+    -----------
+    input_filename: str, XLSX filename
+    sheet_name: str, sheet name in XLSX file
 
-for col in list(df.columns):
-    try:
-        float_val = float(col)
-        renames[col] = 'float' + str(float_val)
-    except Exception:
-        pass
+    '''
+    xls = pd.ExcelFile(input_filename)
+    df = pd.read_excel(xls, sheet_name=sheet_name)
 
-df = df.rename(columns=renames)
+    renames = {}
 
-# renames of other weirdly named columns
-renames = {}
-for weird_char in ['\n']:
+    # columns that have int as column value
+    int_cols = [x for x in list(df.columns) if isinstance(x, int)]
+    for col in int_cols:
+        renames[col] = 'int' + str(col)
+
+    # columns that have float as column value
     for col in list(df.columns):
-        if weird_char in col:
-            renames[col] = re.sub(weird_char, ' ', col)
+        try:
+            float_val = float(col)
+            renames[col] = 'float' + str(float_val)
+        except Exception:
+            pass
 
-df = df.rename(columns=renames)
+    # columns that have odd characters in them, e.g. newline
+    for weird_char in ['\n']:
+        for col in list(df.columns):
+            if str(weird_char) in str(col):
+                renames[col] = re.sub(weird_char, ' ', col)
 
-df.to_csv('InventoriedItemsReport_2024.csv', index=False)
+    return df.rename(columns=renames)
+
+if __name__ == '__main__':
+    df = parse(sys.argv[1], sys.argv[2])
+    df.to_csv(sys.stdout, index=False)
