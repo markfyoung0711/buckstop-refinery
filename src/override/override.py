@@ -13,6 +13,7 @@ class Override:
     3. Match the dates of the override.
     4. Apply new_value to matches
     5. Return overridden data.
+
     """
 
     vendor: Vendor
@@ -54,18 +55,18 @@ class Override:
         )
 
         # did not match on field
-        df_unmatched = df_matched[df_matched['field'].isnull()]
 
         idx_matched = (
-            (df_matched["valid_from_pl"] >= df_matched["valid_from"])
-            & (df_matched["valid_to_pl"] <= df_matched["valid_to"])
-            & (df_matched["value_pl"] == df_matched["value"])
+            (df_matched['field'].notnull()) &
+            (df_matched["valid_from_pl"] >= df_matched["valid_from"]) &
+            (df_matched["valid_to_pl"] <= df_matched["valid_to"]) &
+            (df_matched["value_pl"] == df_matched["value"])
         )
 
         if (num_matched := idx_matched.sum()) > 0:
             log.info(f"Override matches {num_matched}")
 
-        return idx_matched
+        return idx_matched, df_matched
 
     def apply(self, point_in_time, payload):
         """
@@ -77,6 +78,6 @@ class Override:
         and the vendor file matches a vendor in
         """
         if (idx_matched := self.match(payload)).sum() > 0:
-            pass # payload.loc[idx_matched, 'value'
+            return payload.loc[idx_matched]
 
         return payload
