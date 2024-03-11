@@ -1,0 +1,11 @@
+SS spreadsheet notes.
+
+1. Null 'Cust No'
+2. Field that has digits (1, 1.1)
+3. Unnamed fields (warning)
+4. Vlookup Item for Invd Items - "Catalog Key" to get into Catalog to summarize to the 'Sales By Product Report'
+5. generated key: Year.1 + Period for sort order (e.g. FY24 P01 vs. P01 FY24)
+6. Ship Date has "Mfg Date" in it, so strip it out
+
+
+
