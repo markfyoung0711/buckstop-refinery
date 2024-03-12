@@ -1,4 +1,3 @@
-import src.constants as constants
 from datetime import datetime
 from tempfile import TemporaryDirectory
 
@@ -12,7 +11,6 @@ def test_vendor():
     """Test that we can create a Vendor and use it"""
     test_vendor_name = "test"
     test_date = datetime(2024, 2, 26)
-    test_date_path = f"{test_date:%Y/%m/%d}"
     test_filename = f"buster_brown_{test_date:%Y%m%d}.csv"
 
     # TODO: fixture

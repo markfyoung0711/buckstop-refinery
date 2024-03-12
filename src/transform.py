@@ -53,7 +53,8 @@ dfnew['Barcode'] = np.nan
 dfnew['Weight'] = np.nan
 dfnew['Sales Description'] = dfnew['Name']
 dfnew = dfnew.drop(columns=['element'])
-columns = ['External ID', 'Name', 'Product Type', 'Internal Reference', 'Barcode', 'Sales Price', 'Cost', 'Weight', 'Sales Description']
+columns = ['External ID', 'Name', 'Product Type', 'Internal Reference', 'Barcode', 'Sales Price',
+           'Cost', 'Weight', 'Sales Description']
 dfnew = dfnew[columns]
 dfnew.to_csv('product.csv', index=False)
 
