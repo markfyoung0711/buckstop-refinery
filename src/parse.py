@@ -102,8 +102,6 @@ def parse(input_directory, output_directory, selected_sheets):
         log.info(f'Parsing file {sharepoint_filename}/...')
         xls = pd.ExcelFile(sharepoint_filename)
 
-        if 'Order Analysis' in sharepoint_filename:
-            import pdb;pdb.set_trace()
         sheets_of_interest = set(xls.sheet_names)
         if selected_sheets:
             sheets_of_interest = set(selected_sheets_of_interest).intersection(set(xls.sheet_names))

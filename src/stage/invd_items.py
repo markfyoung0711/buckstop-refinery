@@ -3,6 +3,7 @@ import sys
 
 import pandas as pd
 
+
 def parse(input_filename, sheet_name='''Inv'd Items Report'''):
     '''
     open xlsx file for sheet name, parse it and return as df
@@ -38,6 +39,7 @@ def parse(input_filename, sheet_name='''Inv'd Items Report'''):
                 renames[col] = re.sub(weird_char, ' ', col)
 
     return df.rename(columns=renames)
+
 
 if __name__ == '__main__':
     df = parse(sys.argv[1], sys.argv[2])
