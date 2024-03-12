@@ -1,0 +1,14 @@
+package:
+    name: bsl_refinery
+    version: 0.0.1
+
+source:
+    path: ..
+
+requirements:
+    build:
+    - python=3.10
+    - setuptools
+    run:
+    - python=3.10
+    - pandas

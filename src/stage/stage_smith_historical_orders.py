@@ -1,3 +1,5 @@
+import pandas as pd
+
 from datetime import datetime
 from dataclasses import dataclass
 
@@ -12,16 +14,16 @@ class StageSmithHistoricalOrders(Stage):
     end_date: datetime
     vendor: VendorSmithHistoricalOrders
 
-    def load_dates():
+    def load_dates(self):
         data = []
-        for date in pd.daterange(start_date, end_date):
-            df = stage(date)
+        for date in pd.daterange(self.start_date, self.end_date):
+            df = self.stage(date)
             data.append(df)
         # do something with the history to validate it
         # collapse the data into time series
         # collapse keys: Order No, Order Date
 
-    def stage(date):
+    def stage(self, date):
         """has parssing logic for a single date"""
         vendor = self.vendor(vendor_root=VENDOR_ROOT, vendor_date=date)
         return pd.read_excel(vendor.vendor_filename, sheet_name="Historical Orders")

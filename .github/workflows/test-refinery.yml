@@ -6,8 +6,7 @@ on:
 
 jobs:
   test-refinery:
-    runs-on: ubuntu-latest
-    run: echo "Hello there"
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v3
