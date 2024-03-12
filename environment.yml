@@ -179,7 +179,6 @@ dependencies:
       - types-pyyaml==6.0.12.12
       - typing-extensions==4.10.0
       - ulid==1.1
-      - unknown==0.0.0
       - url-normalize==1.4.3
       - urllib3==2.2.1
       - wcmatch==8.4
