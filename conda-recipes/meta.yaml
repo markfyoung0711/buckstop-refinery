@@ -3,12 +3,12 @@ package:
     version: 0.0.1
 
 source:
-    git_url: https://github.com/markfyoung0711/buckstop-refinery
+    path: ..
 
 requirements:
     build:
-    - python
+    - python=3.10
     - setuptools
-
     run:
-    - python
+    - python=3.10
+    - pandas
