@@ -1,3 +1,22 @@
+[project]
+name = "bsl_refinery"
+version = "0.0.1"
+authors = [
+    { name='Mark F. Young', email='mark.francis.young@gmail.com' },
+]
+description = "A package that stages, checks, and houses warehouse files.  It also preserves original raw sources."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/markfyoung0711/buckstop-refinery"
+Issues = "https://github.com/markfyoung0711/buckstop-refinery/issues"
+
+
 [tool.pytest.ini_options]
 python_classes = ["Test", "Describe"]
 python_functions = ["test_", "it_", "and_", "but_", "they_"]
