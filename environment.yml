@@ -135,7 +135,6 @@ dependencies:
       - attrs==23.2.0
       - backoff==2.2.1
       - bracex==2.4
-      - bsl-refinery==0.0.1
       - build==1.1.1
       - cachetools==5.3.3
       - cattrs==23.2.3
