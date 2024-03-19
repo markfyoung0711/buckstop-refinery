@@ -1,3 +1,8 @@
+"""
+Data Structures for each of the data elements that are needed for
+recommended scheduling analytics reports for a custom case manufacturer
+"""
+
 data_structures = {
     "production_schedule_report": {
         "order_details": {
