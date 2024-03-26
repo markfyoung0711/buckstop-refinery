@@ -6,6 +6,11 @@ from src.stage.quality_cases_scheduling import data_structures
 # Function to generate sample data based on data structure
 def generate_sample_data(data_structure):
     sample_data = {}
+    if not isinstance(data_structure, dict):
+        print('is not dict')
+        import pdb; pdb.set_trace()
+    else:
+        print('is dict')
     for key, value in data_structure.items():
         if isinstance(value, dict):
             sample_data[key] = generate_sample_data(value)

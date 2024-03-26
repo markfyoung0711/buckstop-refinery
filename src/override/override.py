@@ -2,34 +2,53 @@ import pandas as pd
 from src.bonum_logging import log
 from dataclasses import dataclass
 from datetime import datetime
-from src.vendor import Vendor
+from src.vendor.vendor import Vendor
+import sqlalchemy as sa
 
 
 @dataclass
 class Override:
     """Behavior:
-    1. Load the overrides into cache for a particular date range
-    2. Use the payload to match field and value to "old_value" from overrides
-    3. Match the dates of the override.
-    4. Apply new_value to matches
-    5. Return overridden data.
+        1. Load the overrides into cache for a particular date range
+        2. Use the payload to match field and value to "old_value" from overrides
+        3. Match the dates of the override.
+        4. Apply new_value to matches
+        5. Return overridden data.
+
+        db_connection: connection to the database storing the overrides
+        vendor: the name of the vendor
+        valid_from: the start date/time (inclusive) of the time series
+        valid_to: the end date/time (exclusive) of the time series
+        archival_date: the date/time that the record is archived, if not null, then
+    it is archived
+
+        key_field_name: the field name of the key
+        key_field_value: the value of the key field
+
+        value_field_name: name of the field that needs an override
+        value_current_value: the current value of the value field
+        value_new_value: the value to use to replace the current value
+
+        description: the reason for the override
+
+        cache: a cache of the overrides for the vendor
 
     """
 
+    db_connection: sa.engine.base.Engine
     vendor: Vendor
     valid_from: datetime
     valid_to: datetime
     archive_date: datetime
-    field_name: str
-    old_value: str
-    new_value: str
-    description: str
-    cache: pd.DataFrame
-    pass
 
-    def __init__(self):
-        # todo
-        return pd.DataFrame()
+    key_field_name: str
+    key_field_value: str
+
+    value_field_name: str
+    value_current_value: str
+    value_new_value: str
+
+    description: str
 
     def load(self, point_in_time):
         """Load overrides from DB and cache in memory"""
@@ -57,10 +76,10 @@ class Override:
         # did not match on field
 
         idx_matched = (
-            (df_matched['field'].notnull()) &
-            (df_matched["valid_from_pl"] >= df_matched["valid_from"]) &
-            (df_matched["valid_to_pl"] <= df_matched["valid_to"]) &
-            (df_matched["value_pl"] == df_matched["value"])
+            (df_matched["field"].notnull())
+            & (df_matched["valid_from_pl"] >= df_matched["valid_from"])
+            & (df_matched["valid_to_pl"] <= df_matched["valid_to"])
+            & (df_matched["value_pl"] == df_matched["value"])
         )
 
         if (num_matched := idx_matched.sum()) > 0:

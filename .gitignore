@@ -1,3 +1,6 @@
 .vscode/*
 *.pyc
 .DS_Store
+build/
+bsl_refinery.egg-info
+dist/
